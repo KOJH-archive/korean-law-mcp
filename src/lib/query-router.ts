@@ -95,6 +95,22 @@ function hasProcedureIntent(query: string): boolean {
 // ────────────────────────────────────────
 
 const routePatterns: Pattern[] = [
+  // ── 0. 법률 리스크 진단/평가 (위법 소지, 문제될까 등) ──
+  {
+    name: "risk_eval",
+    patterns: [
+      /위법\s*소지|위험\s*요소|문제\s*될까|처벌\s*받나|위반\s*소지|법적\s*리스크|위험\s*소지|불법\s*인가요?|문제가?\s*되나요?/i,
+      /이런\s*상황.*(?:문제|위법|불법|처벌)/,
+    ],
+    tool: "legal_analysis",
+    extract: (query) => ({
+      mode: "risk_eval",
+      situation: query,
+    }),
+    reason: "상황 기반 위법/리스크 진단 키워드 → legal_analysis (mode=risk_eval)",
+    priority: 0,
+  },
+
   // ── 1. 특정 조문 조회 (최고 우선) ──
   {
     name: "specific_article",

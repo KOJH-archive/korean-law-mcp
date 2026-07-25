@@ -15,10 +15,13 @@ import { verifyCitations } from "./verify-citations.js"
 import { citeCheck } from "./cite-check.js"
 import { applicableLaw } from "./applicable-law.js"
 import { impactMap } from "./impact-map.js"
+import { evaluateRisk } from "./risk-evaluator.js"
 
 export const LegalAnalysisSchema = z.object({
-  mode: z.enum(["verify_citations", "cite_check", "applicable_law", "impact_map"])
+  mode: z.enum(["verify_citations", "cite_check", "applicable_law", "impact_map", "risk_eval"])
     .describe("분석 유형 (도구 설명의 mode 표 참조)"),
+  situation: z.string().optional()
+    .describe("[risk_eval 필수] 리스크 평가를 수행할 문제 상황 설명 텍스트"),
   text: z.string().optional()
     .describe("[verify_citations 필수] 검증할 법률 텍스트 (LLM 답변/계약서 등 조문 인용 포함 문자열)"),
   caseNumber: z.string().optional()
@@ -29,6 +32,8 @@ export const LegalAnalysisSchema = z.object({
     .describe("[impact_map 필수, applicable_law 선택] 조문 번호 (예: '제103조', '제10조의2')"),
   date: z.string().optional()
     .describe("[applicable_law 필수] 기준일 — 행위·계약·처분 시점 (예: '2023-05-10', '20230510')"),
+  domain: z.string().optional()
+    .describe("[risk_eval 선택] 특정 법률 영역 힌트 (예: '임대차', '근로기준', '도로교통', '개인정보')"),
   maxCitations: z.number().min(1).max(30).optional()
     .describe("[verify_citations] 검증할 최대 인용 개수 (기본 15, 많을수록 느림)"),
   display: z.number().min(1).max(50).optional()
@@ -57,6 +62,10 @@ export async function legalAnalysis(
   const apiKey = input.apiKey
 
   switch (input.mode) {
+    case "risk_eval":
+      const sit = input.situation || input.text
+      if (!sit) return inputError("mode=risk_eval에는 situation(또는 text)가 필요합니다.")
+      return evaluateRisk(apiClient, { situation: sit, domain: input.domain, apiKey })
     case "verify_citations":
       if (!input.text) return inputError("mode=verify_citations에는 text가 필요합니다.")
       return verifyCitations(apiClient, {

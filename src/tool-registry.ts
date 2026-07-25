@@ -603,7 +603,7 @@ export const allTools: McpTool[] = [
   },
   {
     name: "legal_analysis",
-    description: "[정밀분석] 검증·분석 4종 통합. mode: verify_citations=텍스트 속 조문 인용('민법 제750조' 등)이 실존하는지 법제처 DB 교차검증, LLM 환각 방지(text 필수) | cite_check=판례 생사 확인 — 사건번호로 후속 인용 역추적+변경·폐기 감지, 한국형 Citator(caseNumber 필수) | applicable_law=사건 시점에 시행되던 법령 버전+그 시점 조문+부칙 경과조치, 행위시법 판단(lawName+date 필수, jo 선택) | impact_map=한 조문을 인용한 판례·헌재·해석례·행심·조례 역방향 그래프+mermaid(lawName+jo 필수)",
+    description: "[정밀분석] 검증·분석 5종 통합. mode: risk_eval=상황별 법률 리스크 종합 진단(situation 필수, 예 '직원이 이직 시 기술 유출 시 문제점') | verify_citations=텍스트 속 조문 인용('민법 제750조' 등)이 실존하는지 법제처 DB 교차검증, LLM 환각 방지(text 필수) | cite_check=판례 생사 확인 — 사건번호로 후속 인용 역추적+변경·폐기 감지, 한국형 Citator(caseNumber 필수) | applicable_law=사건 시점에 시행되던 법령 버전+그 시점 조문+부칙 경과조치, 행위시법 판단(lawName+date 필수, jo 선택) | impact_map=한 조문을 인용한 판례·헌재·해석례·행심·조례 역방향 그래프+mermaid(lawName+jo 필수)",
     schema: LegalAnalysisSchema,
     handler: legalAnalysis
   },

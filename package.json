@@ -32,6 +32,7 @@
     "watch": "tsc --watch",
     "start": "node build/index.js",
     "cli": "node build/cli.js",
+    "web": "node build/web-server.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
