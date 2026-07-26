@@ -254,7 +254,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (data.route) {
           routeHtml = `<div style="margin-bottom: 12px; font-size: 13px; color: #38bdf8;">🎯 자동 추천 도구: <strong>${data.route.tool}</strong> (${data.route.reason})</div>`;
         }
-        searchReportCard.innerHTML = routeHtml + renderMarkdown(data.text || "");
+        // Render search result with clickable URLs
+        const rendered = renderMarkdown(data.text || "");
+        searchReportCard.innerHTML = routeHtml + linkifyUrls(rendered);
         renderMermaidInContainer(searchReportCard);
       }
     } catch (error) {
@@ -275,4 +277,70 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+
+  // Handle clicks on auto-generated tool links
+  if (searchReportCard) {
+    searchReportCard.addEventListener("click", (e) => {
+      const toolLink = e.target.closest('.tool-link');
+      if (toolLink && queryInput) {
+        queryInput.value = toolLink.textContent;
+        executeSearch();
+      }
+    });
+  }
+// Helper to convert plaintext URLs into clickable links
+function linkifyUrls(text) {
+  if (!text) return text;
+  
+  // 1. Linkify tool calls like get_law_text(mst="123")
+  let linked = text.replace(/\b([a-z_]+)\(([^)]*)\)/g, (match, toolName) => {
+    if (/^(get|search|chain|impact|applicable)/.test(toolName)) {
+      return `<span class="tool-link" style="color:#38bdf8; cursor:pointer; text-decoration:underline; font-weight:600;" title="클릭 시 자동 검색">${match}</span>`;
+    }
+    return match;
+  });
+
+  // 2. Linkify absolute URLs (http, https)
+  linked = linked.replace(/(https?:\/\/[^\s<]+)/g, "<a href='$1' target='_blank' rel='noopener'>$1</a>");
+  
+  // 3. Linkify relative paths from law.go.kr (e.g., /DRF/lawService.do?...)
+  linked = linked.replace(/(\/[^\s<]+\.[^\s<]*)/g, (match) => {
+    if (match.startsWith('http') || match.startsWith('mailto:')) return match;
+
+    // Convert OpenAPI Endpoint URLs to User-facing Web Viewer URLs to avoid Auth errors
+    if (match.includes('/DRF/lawService.do')) {
+      try {
+        const queryStr = match.split('?')[1] || "";
+        const urlParams = new URLSearchParams(queryStr);
+        const target = urlParams.get('target');
+        
+        let webUrl = "";
+        if (target === 'prec') {
+          const id = urlParams.get('ID');
+          if (id) webUrl = `https://www.law.go.kr/LSW/precInfoP.do?precSeq=${id}`;
+        } else if (target === 'law') {
+          const mst = urlParams.get('MST');
+          if (mst) webUrl = `https://www.law.go.kr/LSW/lsInfoP.do?lsiSeq=${mst}`;
+        } else if (target === 'ordin') {
+          const mst = urlParams.get('MST');
+          if (mst) webUrl = `https://www.law.go.kr/LSW/ordinInfoP.do?ordinSeq=${mst}`;
+        } else if (target === 'admrul') {
+          const mst = urlParams.get('MST');
+          if (mst) webUrl = `https://www.law.go.kr/LSW/admRulInfoP.do?admRulSeq=${mst}`;
+        }
+
+        if (webUrl) {
+          return `<a href='${webUrl}' target='_blank' rel='noopener' style='color:#10b981; font-weight:bold; text-decoration:underline;' title='국가법령정보센터 공식 웹페이지로 이동'>[웹 페이지로 보기]</a>`;
+        }
+      } catch(e) {
+        // Fallback to normal behavior if parsing fails
+      }
+    }
+
+    const base = "https://www.law.go.kr";
+    return `<a href='${base}${match}' target='_blank' rel='noopener'>${match}</a>`;
+  });
+  return linked;
+}
+
 });
