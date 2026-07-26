@@ -10,12 +10,29 @@ import { routeQuery } from "./lib/query-router.js"
 import { executeTool } from "./lib/cli-executor.js"
 import { legalAnalysis } from "./tools/legal-analysis.js"
 
+import fs from "fs"
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+function findPublicPath(): string {
+  const candidates = [
+    path.resolve(process.cwd(), "public"),
+    path.resolve(path.dirname(process.execPath), "public"),
+    path.resolve(__dirname, "../public"),
+    path.resolve(__dirname, "./public"),
+  ]
+  for (const dir of candidates) {
+    if (fs.existsSync(path.join(dir, "index.html"))) {
+      return dir
+    }
+  }
+  return path.resolve(process.cwd(), "public")
+}
+
 const app = express()
 const PORT = process.env.PORT || 3000
-const publicPath = path.resolve(__dirname, "../public")
+const publicPath = findPublicPath()
 
 app.use(express.json({ limit: "1mb" }))
 app.use(express.static(publicPath))

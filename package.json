@@ -25,10 +25,18 @@
   },
   "bin": {
     "korean-law-mcp": "build/index.js",
-    "korean-law": "build/cli.js"
+    "korean-law": "build/cli.js",
+    "korean-law-web": "build/web-launcher.js"
+  },
+  "pkg": {
+    "scripts": "build/**/*.js",
+    "assets": [
+      "public/**/*"
+    ]
   },
   "scripts": {
     "build": "tsc",
+    "build:exe": "tsc && npx @yao-pkg/pkg . --targets node18-win-x64 --output korean-law-web.exe",
     "watch": "tsc --watch",
     "start": "node build/index.js",
     "cli": "node build/cli.js",

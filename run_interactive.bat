@@ -13,20 +13,28 @@ if %errorlevel% neq 0 (
     echo [ERROR] Node.js is not installed.
     echo Please install Node.js from https://nodejs.org
     pause
-    exit /b
+    exit /b 1
 )
 
 :: 2. Install Packages
-if exist node_modules goto :skip_install
-echo [INFO] Installing npm packages (first time)...
-call npm install
-:skip_install
+if not exist node_modules (
+    echo [INFO] Installing npm packages (first time)...
+    call npm install
+    if %errorlevel% neq 0 (
+        echo [ERROR] npm install failed.
+        pause
+        exit /b 1
+    )
+)
 
 :: 3. Build Project
-if exist build goto :skip_build
 echo [INFO] Building TypeScript files...
 call npm run build
-:skip_build
+if %errorlevel% neq 0 (
+    echo [ERROR] Build failed! Check TypeScript errors above.
+    pause
+    exit /b 1
+)
 
 :: 4. Get API Key
 if not "%LAW_OC%"=="" goto :skip_key
@@ -46,6 +54,11 @@ echo.
 
 node build/cli.js interactive
 
+if %errorlevel% neq 0 (
+    echo [ERROR] CLI exited with error code %errorlevel%.
+)
+
 echo.
 echo Process finished.
 pause
+
