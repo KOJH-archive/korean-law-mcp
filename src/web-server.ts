@@ -77,9 +77,11 @@ app.post("/api/query", async (req, res) => {
   }
 })
 
+import { generateGeminiLegalAnalysis } from "./lib/gemini-client.js"
+
 // 2. 상황 기반 법률 리스크 진단 API
 app.post("/api/risk-eval", async (req, res) => {
-  const { situation, domain, apiKey } = req.body
+  const { situation, domain, apiKey, geminiApiKey } = req.body
   if (!situation || typeof situation !== "string") {
     res.status(400).json({ isError: true, message: "situation 파라미터가 입력되지 않았습니다." })
     return
@@ -87,18 +89,39 @@ app.post("/api/risk-eval", async (req, res) => {
 
   try {
     const apiClient = getClient(apiKey)
-    const result = await legalAnalysis(apiClient, {
+    const baseResult = await legalAnalysis(apiClient, {
       mode: "risk_eval",
       situation,
       domain,
       apiKey: apiKey || undefined,
     })
 
-    const markdown = result.content.map(c => c.text).join("\n")
+    const rawContextMarkdown = baseResult.content.map(c => c.text).join("\n")
+    const effectiveGeminiKey = geminiApiKey || process.env.GEMINI_API_KEY || process.env.LLM_API_KEY || ""
+
+    let finalMarkdown = rawContextMarkdown
+
+    if (effectiveGeminiKey) {
+      try {
+        const aiAnalysis = await generateGeminiLegalAnalysis({
+          situation,
+          lawContext: rawContextMarkdown,
+          apiKey: effectiveGeminiKey,
+          domain: domain || undefined,
+        })
+
+        finalMarkdown = `${aiAnalysis}\n\n---\n### 🏛️ 법제처 실정법 및 대법원 판례 DB 원문 근거\n\n${rawContextMarkdown}`
+      } catch (geminiError) {
+        console.warn("[Gemini API Warning]:", geminiError)
+        const errMsg = geminiError instanceof Error ? geminiError.message : String(geminiError)
+        finalMarkdown = `> ⚠️ **Gemini AI 심층 분석 연동 알림**: ${errMsg}\n> (법제처 실정법 진단 결과를 직접 표시합니다.)\n\n${rawContextMarkdown}`
+      }
+    }
+
     res.json({
       situation,
-      markdown,
-      isError: result.isError || false,
+      markdown: finalMarkdown,
+      isError: baseResult.isError || false,
     })
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error)

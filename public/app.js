@@ -10,18 +10,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // API Key LocalStorage & Status Badge Handling
   const apiKeyInput = document.getElementById("apiKey");
+  const geminiApiKeyInput = document.getElementById("geminiApiKey");
   const apiKeyBadge = document.getElementById("apiKeyBadge");
   const toggleApiKeyBtn = document.getElementById("toggleApiKeyVisible");
+  const toggleGeminiKeyBtn = document.getElementById("toggleGeminiKeyVisible");
 
   function updateApiKeyStatus() {
-    const val = apiKeyInput ? apiKeyInput.value.trim() : "";
+    const lawKey = apiKeyInput ? apiKeyInput.value.trim() : "";
+    const geminiKey = geminiApiKeyInput ? geminiApiKeyInput.value.trim() : "";
+
     if (apiKeyBadge) {
-      if (val.length > 0) {
+      if (lawKey.length > 0 && geminiKey.length > 0) {
         apiKeyBadge.className = "badge badge-active";
-        apiKeyBadge.textContent = "🟢 커스텀 API 키 적용됨";
+        apiKeyBadge.textContent = "🟢 법제처 & Gemini API 키 모두 활성화됨";
+      } else if (geminiKey.length > 0) {
+        apiKeyBadge.className = "badge badge-active";
+        apiKeyBadge.textContent = "✨ Gemini LLM API 키 활성화됨 (서버 기본 법제처 키)";
+      } else if (lawKey.length > 0) {
+        apiKeyBadge.className = "badge badge-active";
+        apiKeyBadge.textContent = "🟢 법제처 커스텀 API 키 적용됨";
       } else {
         apiKeyBadge.className = "badge badge-inactive";
-        apiKeyBadge.textContent = "🟡 서버 기본 API 키 (LAW_OC) 사용 중";
+        apiKeyBadge.textContent = "🟡 서버 기본 API 키 사용 중";
       }
     }
   }
@@ -29,29 +39,45 @@ document.addEventListener("DOMContentLoaded", () => {
   if (apiKeyInput) {
     const savedKey = localStorage.getItem("LAW_OC") || "";
     apiKeyInput.value = savedKey;
-    updateApiKeyStatus();
 
     apiKeyInput.addEventListener("input", (e) => {
-      const val = e.target.value.trim();
-      localStorage.setItem("LAW_OC", val);
+      localStorage.setItem("LAW_OC", e.target.value.trim());
       updateApiKeyStatus();
     });
   }
 
+  if (geminiApiKeyInput) {
+    const savedGeminiKey = localStorage.getItem("GEMINI_API_KEY") || "";
+    geminiApiKeyInput.value = savedGeminiKey;
+
+    geminiApiKeyInput.addEventListener("input", (e) => {
+      localStorage.setItem("GEMINI_API_KEY", e.target.value.trim());
+      updateApiKeyStatus();
+    });
+  }
+
+  updateApiKeyStatus();
+
   if (toggleApiKeyBtn && apiKeyInput) {
     toggleApiKeyBtn.addEventListener("click", () => {
-      if (apiKeyInput.type === "password") {
-        apiKeyInput.type = "text";
-        toggleApiKeyBtn.textContent = "🙈";
-      } else {
-        apiKeyInput.type = "password";
-        toggleApiKeyBtn.textContent = "👁️";
-      }
+      apiKeyInput.type = apiKeyInput.type === "password" ? "text" : "password";
+      toggleApiKeyBtn.textContent = apiKeyInput.type === "password" ? "👁️" : "🙈";
+    });
+  }
+
+  if (toggleGeminiKeyBtn && geminiApiKeyInput) {
+    toggleGeminiKeyBtn.addEventListener("click", () => {
+      geminiApiKeyInput.type = geminiApiKeyInput.type === "password" ? "text" : "password";
+      toggleGeminiKeyBtn.textContent = geminiApiKeyInput.type === "password" ? "👁️" : "🙈";
     });
   }
 
   function getApiKey() {
     return apiKeyInput ? apiKeyInput.value.trim() : "";
+  }
+
+  function getGeminiApiKey() {
+    return geminiApiKeyInput ? geminiApiKeyInput.value.trim() : "";
   }
 
   // 2. Tab Navigation
@@ -152,6 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const domain = domainSelect ? domainSelect.value : "";
       const apiKey = getApiKey();
+      const geminiApiKey = getGeminiApiKey();
 
       // UI Loading state
       riskResultArea.classList.remove("hidden");
@@ -163,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const response = await fetch("/api/risk-eval", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ situation, domain, apiKey }),
+          body: JSON.stringify({ situation, domain, apiKey, geminiApiKey }),
         });
 
         const data = await response.json();
@@ -201,6 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const apiKey = getApiKey();
+    const geminiApiKey = getGeminiApiKey();
 
     searchResultArea.classList.remove("hidden");
     searchSpinner.classList.remove("hidden");
@@ -211,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch("/api/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, apiKey }),
+        body: JSON.stringify({ query, apiKey, geminiApiKey }),
       });
 
       const data = await response.json();

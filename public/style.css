@@ -504,3 +504,67 @@ body {
   border-radius: var(--radius-md);
   overflow-x: auto;
 }
+
+/* Multi API Input Grid Styles */
+.api-banner-card {
+  padding: 20px 24px;
+}
+.api-banner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.api-banner-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.api-banner-title h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.api-banner-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 10px;
+}
+.api-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 768px) {
+  .api-inputs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.api-input-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+.key-input {
+  width: 100%;
+  padding-right: 40px;
+}
+.api-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.btn-icon {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.7;
+}
+.btn-icon:hover {
+  opacity: 1.0;
+}

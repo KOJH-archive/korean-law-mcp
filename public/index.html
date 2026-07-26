@@ -34,18 +34,31 @@
       <div class="api-banner-header">
         <div class="api-banner-title">
           <span>🔑</span>
-          <h3>법제처 오픈 API 인증키 설정</h3>
+          <h3>API 인증키 설정 (법제처 & Gemini AI 파운데이션 모델)</h3>
         </div>
         <a href="https://open.law.go.kr" target="_blank" rel="noopener noreferrer" class="api-link-btn">
-          <span>🌐 무료 API 키 발급 신청 (open.law.go.kr) ↗</span>
+          <span>🌐 법제처 API 키 발급 ↗</span>
         </a>
       </div>
       <div class="api-banner-body">
-        <div class="api-input-wrapper">
-          <input type="password" id="apiKey" class="glass-input key-input-large" placeholder="법제처 API 키 (OC 값)를 입력하세요" />
-          <button type="button" id="toggleApiKeyVisible" class="btn-icon" title="비밀번호 표시/숨기기">👁️</button>
+        <div class="api-inputs-grid">
+          <div class="api-input-group">
+            <label for="apiKey">⚖️ 법제처 Open API Key (OC)</label>
+            <div class="api-input-wrapper">
+              <input type="password" id="apiKey" class="glass-input key-input" placeholder="법제처 OC API 키" />
+              <button type="button" id="toggleApiKeyVisible" class="btn-icon" title="표시/숨기기">👁️</button>
+            </div>
+          </div>
+
+          <div class="api-input-group">
+            <label for="geminiApiKey">✨ Gemini AI API Key (선택/심층 분석용)</label>
+            <div class="api-input-wrapper">
+              <input type="password" id="geminiApiKey" class="glass-input key-input" placeholder="Gemini API 키 (aistudio.google.com)" />
+              <button type="button" id="toggleGeminiKeyVisible" class="btn-icon" title="표시/숨기기">👁️</button>
+            </div>
+          </div>
         </div>
-        <p class="api-banner-desc">💡 입력한 API 키는 브라우저에 **자동 저장**되어 다음 접속 시에도 그대로 유지됩니다.</p>
+        <p class="api-banner-desc">💡 API 키는 브라우저에 **자동 저장**되며, Gemini API 키 입력 시 실정법 조문과 AI 심층 리스크 진단 보고서가 합성됩니다.</p>
       </div>
     </section>
 
