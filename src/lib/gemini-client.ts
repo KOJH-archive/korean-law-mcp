@@ -38,8 +38,8 @@ ${domain ? `[지정 법률 도메인]: ${domain}` : ""}
 ${lawContext}
 `
 
-  // Gemini 최신 모델 순차 시도
-  const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+  // Gemini 표준 모델 순차 시도 (2.0-flash ➔ 1.5-flash ➔ 1.5-pro)
+  const models = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"]
   let lastError: Error | null = null
 
   for (const model of models) {

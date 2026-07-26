@@ -44,7 +44,7 @@ function getClient(userApiKey?: string): LawApiClient {
 
 // 1. 자연어 종합 리서치 API
 app.post("/api/query", async (req, res) => {
-  const { query, apiKey } = req.body
+  const { query, apiKey, geminiApiKey } = req.body
   if (!query || typeof query !== "string") {
     res.status(400).json({ isError: true, message: "query 파라미터가 유효하지 않습니다." })
     return
@@ -64,11 +64,29 @@ app.post("/api/query", async (req, res) => {
       apiKey: apiKey || undefined
     })
 
-    const text = result.content.map(c => c.text).join("\n")
+    const rawText = result.content.map(c => c.text).join("\n")
+    let finalText = rawText
+
+    const effectiveGeminiKey = geminiApiKey || process.env.GEMINI_API_KEY || process.env.LLM_API_KEY || ""
+    if (effectiveGeminiKey && !result.isError && rawText.trim().length > 0) {
+      try {
+        const aiSummary = await generateGeminiLegalAnalysis({
+          situation: query,
+          lawContext: rawText,
+          apiKey: effectiveGeminiKey,
+        })
+        finalText = `### ✨ Gemini AI 법률 리서치 종합 분석\n\n${aiSummary}\n\n---\n### 🏛️ 법제처 Open API 수집 원문\n\n${rawText}`
+      } catch (aiErr) {
+        console.warn("[Gemini Search Summary Warning]:", aiErr)
+        // Fallback cleanly to raw text
+        finalText = rawText
+      }
+    }
+
     res.json({
       query,
       route: { tool: route.tool, reason: route.reason },
-      text,
+      text: finalText,
       isError: result.isError || false,
     })
   } catch (error) {
